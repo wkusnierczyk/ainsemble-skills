@@ -1,13 +1,14 @@
 ---
-description: Run a TPM project health audit
+description: "TPM: 'fix #58' to fix one item, 'audit' for full project health audit"
 agent: tpm
 allowed-tools:
   - Bash
   - Grep
   - Glob
   - Read
+  - Write
 ---
 
-Run a full project health audit on this repository. Check all 6 areas: untriaged issues, milestone health, stale items, open PRs, branch hygiene, and code TODOs. Produce a structured health report and propose fixes.
+Do not interpret or rephrase. Pass the following request verbatim to the TPM agent:
 
 $ARGUMENTS

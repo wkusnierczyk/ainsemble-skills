@@ -12,21 +12,25 @@ The project should have three views: **Board**, **Roadmap**, **Table**. These ca
 
 ### Project Fields
 
-The project should define these custom single-select fields:
+The project needs these fields/settings:
 
-#### Type field
+#### Issue types (org-level, not a project field)
 
-Maps from issue `type:*` labels. Colors match the corresponding label colors.
+GitHub issue types are a **built-in org-level feature**, not a project single-select field. They appear as the "Type" column in projects automatically. They are managed under **org Settings > Issue types**, not via project field APIs.
 
-| Option    | Color             | Maps from labels                                    |
-|-----------|-------------------|-----------------------------------------------------|
-| Feature   | `#0E8A16` (green) | `type:feature`                                      |
-| Bug       | `#D93F0B` (red)   | `type:bug`                                          |
-| Task      | `#1D76DB` (blue)  | `type:task`, `type:cleanup`, `type:documentation`   |
+Expected issue types:
 
-#### Priority field
+| Type      | Maps from labels                                    |
+|-----------|-----------------------------------------------------|
+| Feature   | `type:feature`                                      |
+| Bug       | `type:bug`                                          |
+| Task      | `type:task`, `type:cleanup`, `type:documentation`   |
 
-Maps from issue `priority:*` labels. Colors match the corresponding label colors.
+To set an issue's type, use the `updateIssue(issueTypeId:)` GraphQL mutation — not `item-edit --field-id`. The CLI's `field-list` and `field-create` commands do not see or manage issue types.
+
+#### Priority field (project single-select)
+
+A custom single-select field on the project.
 
 | Option | Color                | Maps from label     |
 |--------|----------------------|---------------------|
@@ -34,7 +38,7 @@ Maps from issue `priority:*` labels. Colors match the corresponding label colors
 | P1     | `#FFA500` (orange)   | `priority:medium`   |
 | P2     | `#FBCA04` (yellow)   | `priority:low`      |
 
-#### Status field
+#### Status field (project single-select)
 
 Replaces the default project Status options (Todo, In Progress, Done) with:
 
@@ -44,6 +48,8 @@ Replaces the default project Status options (Todo, In Progress, Done) with:
 | Progressing | `#FBCA04` (yellow)   | In Progress     |
 | Completed   | `#0E8A16` (green)    | Done            |
 
+**Warning**: Renaming single-select options via the `updateProjectV2Field` mutation clears existing values on all items. After renaming options, you must re-set the Status value on every item. Always flag this for user confirmation before executing — it is destructive.
+
 Every issue, PR, and milestone in the project must have a Status value set.
 
 ### Agent Behavior
@@ -51,11 +57,12 @@ Every issue, PR, and milestone in the project must have a Status value set.
 The agent should:
 1. Check if a project exists for the repo (via `gh project list --owner {owner}`)
 2. If not, create one with `gh project create --owner {owner} --title "{Title Case Repo Name}"`
-3. Verify custom fields exist (Type, Priority, Status) — if not, flag for manual setup (field creation via GraphQL is fragile)
-4. Verify Status options are Pending/Progressing/Completed (not the defaults Todo/In Progress/Done) — flag for manual rename if wrong
-5. Ensure every open issue, every open PR, and every milestone is added to the project
-6. When triaging issues, set their Type, Priority, and Status project fields
-7. When triaging PRs, set their Status to Progressing and ensure they have an assignee
+3. Verify the **Priority** field exists as a project single-select. If missing, flag for manual creation.
+4. Verify **Status** field options are Pending/Progressing/Completed (not the defaults Todo/In Progress/Done). If wrong, flag for manual rename **and warn that renaming clears existing values**.
+5. Verify **issue types** (Feature, Bug, Task) exist at the org level. If missing or wrong, flag for manual setup under org Settings > Issue types. Do not attempt to create them via project field APIs.
+6. Ensure every open issue, every open PR, and every milestone is added to the project
+7. When triaging issues, set their issue type (via GraphQL `updateIssue`), Priority, and Status
+8. When triaging PRs, set their Status to Progressing and ensure they have an assignee
 
 ## Milestone Structure
 
