@@ -1,5 +1,5 @@
 ---
-description: "TPM: 'fix #58' to fix one item, 'audit' for full project health audit"
+description: "TPM: 'fix #58' | 'audit' | 'prune' | 'help' | 'version' | 'about'"
 agent: tpm
 allowed-tools:
   - Bash
